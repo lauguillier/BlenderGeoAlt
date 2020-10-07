@@ -3,7 +3,7 @@
 ## Overview
 BlenderGeoAlt is a POC script for blender that generates a terrain from north/south/west/east coordinates, fetching the elevation information on french service GéoPortail with highly accurate vertical data (dm).
 
-![La Rhune](/home/laurent/workspace/BlenderGeoAlt/BlenderGeoAlt.png  "La Rhune, Pays basque")
+![La Rhune](BlenderGeoAlt.png  "La Rhune, Pays basque")
 
 Obviously the terrain to modelise must be located in mainland France (including Corsica).
 The purpose of this script is to get elevation accuracy on small terrains for architecture students. For large terrains, you'd better use [BlenderGIS](https://github.com/domlysz/BlenderGIS) add-on, which has rich and nice features.
@@ -20,11 +20,11 @@ At the moment, you have to enter the north/south/west/east coordinates within th
 	east = -1.6527
 
 You can get the coordinates you want by browsing the Géoportail website map ([https://www.geoportail.gouv.fr/carte](https://www.geoportail.gouv.fr/carte) ) and right-click on the selected coordinate to get the lat/long information:
-![Geoportail](/home/laurent/workspace/BlenderGeoAlt/geoportail.png  "Geoportail")	
+![Geoportail](geoportail.png  "Geoportail")	
 
 
 Then set nbstep to indicates the terrain division in x and y directions. Horizontal resolution is apparently about 5m, so do not choose a divider that's yeld a too close length unless you want to get moiré:
-![Moiré due to horizontal oversampling](/home/laurent/workspace/BlenderGeoAlt/moire.png  "Moiré due to horizontale oversampling")
+![Moiré due to horizontal oversampling](moire.png  "Moiré due to horizontale oversampling")
 
 The resulting mesh coordinate units are meter. The mesh will be centered on (0,0) XY reference.
 North is aligned with Y axis and east is aligned with X axis.
