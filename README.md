@@ -11,6 +11,9 @@ The purpose of this script is to get elevation accuracy on small terrains for ar
 
 ## Usage
 
+The script was written in blender 2.90.0.
+Select 'Scripting' workspace tab in the top line, and load the script with menu 'Text/Open' (Alt-O).
+
 At the moment, you have to enter the north/south/west/east coordinates within the python script source code:
 
 	# La Rhune
@@ -25,6 +28,8 @@ You can get the coordinates you want by browsing the Géoportail website map ([h
 
 Then set nbstep to indicates the terrain division in x and y directions. Horizontal resolution is apparently about 5m, so do not choose a divider that's yeld a too close length unless you want to get moiré:
 ![Moiré due to horizontal oversampling](moire.png  "Moiré due to horizontale oversampling")
+
+Click menu 'Text/Run Script' or Alt-P to run the script.
 
 The resulting mesh coordinate units are meter. The mesh will be centered on (0,0) XY reference.
 North is aligned with Y axis and east is aligned with X axis.
