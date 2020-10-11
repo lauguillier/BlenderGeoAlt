@@ -9,6 +9,7 @@ import json
 import requests
 import math
 import time
+import statistics as stat
 
 
 # Coordinates of the selected area
@@ -32,8 +33,10 @@ north = 42.585322
 west = 8.720999
 south = 42.581024
 east = 8.72734
+# target sampling lenght in meter
+SamplingLenght = 10
 
-nbstep = 125
+#nbstep = 125
 
 # TODO : if nbstep is too high, the uri request is too long (http error 414)
 # In this case, perform the operation on n terrain subdivision
@@ -52,10 +55,24 @@ def GeoToLocalY(lat):
     return (lat - midlat) * 111120.0
 
 
-## Object
+# Get terrain dimensions
+lenght = GeoToLocalX(east) - GeoToLocalX(west)
+width = GeoToLocalY(north) - GeoToLocalY(south)
+
+# Determinate nbXstep and nbYstep to get SamplingLenght
+nbXstep = round(lenght/SamplingLenght)
+nbYstep = round(lenght/SamplingLenght)
+
+print("Terrain lenght: {:.2f} - nbXstep = {} - actual sampling lenght: {:.2f}".format(lenght, nbXstep, lenght/nbXstep))
+print("Terrain width: {:.2f} - nbYstep = {} - actual sampling lenght: {:.2f}".format(width, nbYstep, width/nbYstep))
+
+## Blender Object
 name = "land"
 verts = []
 faces = []
+
+# accuracy
+acc = []
 
 
 # get the elevation for each point
@@ -67,36 +84,42 @@ print ("Retrieving elevations on ign.fr")
 start = time.time()
 iter = 1
 
-for lat in numpy.linspace(north, south, nbstep):
+for lat in numpy.linspace(north, south, nbYstep):
     cmd = 'https://wxs.ign.fr/choisirgeoportail/alti/rest/elevation.json?'
     arglon='lon='
     arglat='lat='+str(lat)
-    for lon in numpy.linspace(west, east, nbstep):
+    for lon in numpy.linspace(west, east, nbXstep):
         arg = '|'+str(lon) if lon != west else str(lon)
         arglon += arg
         arg = '|'+str(lat) if lon != east else ''
-        arglat+= arg
+        arglat += arg
 
     cmd += arglon+'&'+arglat
     #print(cmd)
 
-    print("{}/{}".format(iter, nbstep), end='\r')
+    print("{}/{}".format(iter, nbYstep), end='\r')
     iter += 1
     rq = requests.get(cmd)
-    data = rq.json()
+    try:
+        data = rq.json()
+    except ValueError:
+        print("An error occured while getting the elevation data.\nReturned answer was:\n")
+        print(rq)
+        raise Exception("End of script")
     
     for item in data['elevations']:
         x = GeoToLocalX(item['lon'])
         y = GeoToLocalY(item['lat'])
         z = item['z']
-        #TODO : process acc in order to get worst / mean / best accuracy in the field
         
         verts.append([x, y, z])
+        acc.append(item['acc'])
 
     # Now create the faces
-    for i in range(0, nbstep-1):
-        for j in range(0, nbstep-1):
-            faces.append((i*nbstep+j, i*nbstep+j+1, (i+1)*nbstep+j+1, (i+1)*nbstep+j))
+    for i in range(0, nbXstep-1):
+        for j in range(0, nbYstep-1):
+            faces.append((i*nbXstep+j, i*nbXstep+j+1,
+                         (i+1)*nbXstep+j+1, (i+1)*nbXstep+j))
 
 
 # Create Mesh Datablock
@@ -127,7 +150,13 @@ obj["south"] = south
 obj["midlat"] = midlat
 obj["midlon"] = midlon
 obj["NWelevation"] = verts[0][2]
-obj["NbStep"] = nbstep
+obj["NbXStep"] = nbXstep
+obj["NbYStep"] = nbYstep
+obj["Sampling X"] = lenght/nbXstep
+obj["Sampling Y"] = width/nbYstep
+obj["Acc min"] = min(acc)
+obj["Acc max"] = max(acc)
+obj["Acc mean"] = stat.mean(acc)
 
 end = time.time()
 
